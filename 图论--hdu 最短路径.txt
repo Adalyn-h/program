@@ -1,0 +1,86 @@
+图论
+hdu最短路径
+
+     给你n个点，m条无向边，每条边都有长度d和花费p，给你起点s终点t，要求输出起点到终点的最短距离及其花费，如果最短距离有多条路线，则输出花费最少的。
+
+Input
+输入n,m，点的编号是1~n,然后是m行，每行4个数 a,b,d,p，表示a和b之间有一条边，且其长度为d，花费为p。最后一行是两个数 s,t;起点s，终点。n和m为0时输入结束。 
+(1<n<=1000, 0<m<100000, s != t)
+
+Output
+输出 一行有两个数， 最短距离及其花费。
+
+Sample Input
+3 2
+1 2 5 6
+2 3 4 5
+1 3
+0 0
+Sample Output
+9 11
+
+分析：定起点到终点的最短路，所求的最小花费有两个，距离和时间。采用dij算法。因为是无向图，所以赋值时是双向的。
+
+
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+using namespace std;
+
+#define INF 0x3f3f3f
+const int maxn = 1000 + 10;
+int G[maxn][maxn];
+int g[maxn][maxn],d[maxn];
+int pay[maxn];
+int visited[maxn];
+int n,m;
+
+void dijkstra(int s){//s为起点
+    memset(visited,0,sizeof(visited));
+    for (int i = 0; i <= n; i++){
+       if(i==s) d[i] = i;
+       else d[i] = INF;//起点到点i距离赋值为无穷大
+       pay[i] = INF;
+    }
+    pay[s] = d[s] = 0;//起点的两项花费均初始化为0
+    for (int i = 0; i <= n; i++){
+        int x,m = INF;
+        for (int y = 0; y <= n; y++)
+          if (!visited[y] && d[y] <= m)  m = d[x=y];
+        visited[x] = 1;
+        for (int y = 0; y <= n; y++){
+            if (d[y] > d[x] + g[x][y]){//更新花费数组
+                d[y]= d[x]+g[x][y];
+                pay[y] = pay[x] + G[x][y];
+            }
+            else if (d[y] == d[x] + g[x][y] && pay[y] > pay[x] + G[x][y]){
+                pay[y] = pay[x] + G[x][y];
+            }
+        }
+    }
+}
+int main(){
+    while(scanf("%d%d",&n,&m) == 2 && (n||m)){
+        for (int i = 0; i <= n; ++i)
+            for (int j = 0; j <= n; ++j)
+                g[i][j] = G[i][j] = INF;
+        for (int i = 0; i < m; ++i){
+            int u,v,w,x;
+            scanf("%d%d%d%d",&u,&v,&w,&x);
+            if (g[u][v] > w){
+                g[u][v] = g[v][u] = w;
+                G[u][v] = G[v][u] = x;
+            }else if (g[u][v] == w && G[u][v] < x){
+                G[u][v] = G[v][u] = x;
+            }
+        }
+        int s,e;
+        scanf("%d%d",&s,&e);
+        dijkstra(s);
+        printf("%d %d\n",d[e],pay[e]);
+    }
+
+    return 0;
+}
+
+
